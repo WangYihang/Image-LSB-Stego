@@ -1,6 +1,9 @@
 # Image-LSB-Stego
 
+
 Usage : 
+---
+
 ```
 Usage: Image-LSB-Stego.py [options]
 
@@ -20,16 +23,19 @@ Options:
                         Your secret
 ```
 
-Demo : 
+Example : 
+---
 
-Encrypt : 
+> Encrypt : 
+
 ```
 $ python Image-LSB-Stego.py -m e -i input.bmp -o output.bmp -s 'YourSecret' -c 0 -b 0
 Input : [input.bmp]
 Output : [output.bmp]
 Message : [YourSecret]
 ```
-Decrypt : 
+> Decrypt : 
+
 ```
 $ python Image-LSB-Stego.py -m d -i ./output.bmp -c 0 -b 0
 Input : [./output.bmp]
