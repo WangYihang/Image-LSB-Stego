@@ -1,12 +1,12 @@
 #!/usr/bin/env python
 # coding:utf-8
 
+from optparse import OptionParser
 from PIL import Image
 
 RED = 0
 GREEN = 1
 BLUE = 2
-CHANNEL = RED
 
 
 def showBit(char):
@@ -31,8 +31,11 @@ def getBit(char, index):
     return (char >> index & 1)
 
 
-def handleLowBit(char, value):
-    char &= 0b11111110
+def handleBit(char, bit, value):
+    num = 1
+    num <<= bit
+    num ^= 0xFF
+    char &= num
     char |= value
     return char
 
@@ -59,7 +62,7 @@ def showPixels(srcIm):
             print showPixel(pixel)
 
 
-def encrypt(srcIm, message):
+def encrypt(srcIm, message, CHANNEL, BIT):
     height = srcIm.size[1]
     width = srcIm.size[0]
     number = width * height
@@ -75,12 +78,13 @@ def encrypt(srcIm, message):
             if y >= height:
                 return
             pixel = list(srcIm.getpixel((x, y)))
-            pixel[CHANNEL] = handleLowBit(pixel[CHANNEL], getBit(char, 7 - j))
+            pixel[CHANNEL] = handleBit(
+                pixel[CHANNEL], BIT, getBit(char, 7 - j))
             pixel = tuple(pixel)
             srcIm.putpixel((x, y), pixel)
 
 
-def decrypt(srcIm):
+def decrypt(srcIm, CHANNEL, BIT):
     height = srcIm.size[1]
     width = srcIm.size[0]
     number = width * height
@@ -96,7 +100,7 @@ def decrypt(srcIm):
             if y >= height:
                 return
             pixel = list(srcIm.getpixel((x, y)))
-            bit = getBit(pixel[CHANNEL], 0)
+            bit = getBit(pixel[CHANNEL], BIT)
             char |= (bit << 7 - j)
         line += chr(char)
 
@@ -112,11 +116,45 @@ def unprintable(content):
 
 
 def main():
-    # message = "Why are you so diao?"
-    srcIm = Image.open("data.bmp")
-    # encrypt(srcIm, message)
-    decrypt(srcIm)
-    # srcIm.save("data.bmp")
+    parser = OptionParser()
+    parser.add_option("-m", "--model", dest="model",
+                      help="Encrypt model or Decrypt model, [e|d]")
+    parser.add_option("-i", "--input", dest="input",
+                      help="Filename to encrypt", metavar="FILE")
+    parser.add_option("-o", "--output", dest="output",
+                      help="Filename to output", metavar="FILE")
+    parser.add_option("-c", "--channel", dest="channel",
+                      help="Channel of image, use number : \
+                        [0|1|2] to indicate [R|G|B]",
+                      default=0)
+    parser.add_option("-b", "--bit", dest="bit",
+                      help="bit of the pixel's channel",
+                      default=0)
+    parser.add_option("-s", "--secret", dest="secret",
+                      help="Your secret")
+    (options, args) = parser.parse_args()
+
+    channel = int(options.channel)
+    bit = int(options.bit)
+    model = options.model
+    secret = options.secret
+    inputFileName = options.input
+    outputFileName = options.output
+
+    if model == "e":
+        print "Input : [%s]" % (inputFileName)
+        print "Output : [%s]" % (outputFileName)
+        im = Image.open(inputFileName)
+        encrypt(im, secret, channel, bit)
+        im.save(outputFileName)
+    elif model == "d":
+        print "Input : [%s]" % (inputFileName)
+        print "Channel : [%d]" % (channel)
+        print "Bit : [%d]" % (bit)
+        im = Image.open(inputFileName)
+        decrypt(im, channel, bit)
+    else:
+        print "Invalid parameter, use -h to show help"
 
 
 if __name__ == "__main__":
