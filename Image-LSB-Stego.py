@@ -78,10 +78,30 @@ def encrypt(srcIm, message, CHANNEL, BIT):
             if y >= height:
                 return
             pixel = list(srcIm.getpixel((x, y)))
-            pixel[CHANNEL] = handleBit(
-                pixel[CHANNEL], BIT, getBit(char, 7 - j))
+            pixel[CHANNEL] = handleBit(pixel[CHANNEL], BIT, getBit(char, 7 - j))
             pixel = tuple(pixel)
             srcIm.putpixel((x, y), pixel)
+
+# def encrypt(srcIm, message, CHANNEL, BIT):
+#     height = srcIm.size[1]
+#     width = srcIm.size[0]
+#     number = width * height
+#     counter = 0
+#     for i in xrange(0, number, 8):
+#         if counter == len(message):
+#             break
+#         counter += 1
+#         char = ord(message[i / 8])
+#         for j in range(8):
+#             x = i2p(i + j, width)[0]
+#             y = i2p(i + j, width)[1]
+#             if y >= height:
+#                 return
+#             pixel = list(srcIm.getpixel((x, y)))
+#             pixel[CHANNEL] = handleBit(
+#                 pixel[CHANNEL], BIT, getBit(char, 7 - j))
+#             pixel = tuple(pixel)
+#             srcIm.putpixel((x, y), pixel)
 
 
 def decrypt(srcIm, CHANNEL, BIT):
@@ -144,6 +164,7 @@ def main():
     if model == "e":
         print "Input : [%s]" % (inputFileName)
         print "Output : [%s]" % (outputFileName)
+        print "Message : [%s]" % (secret)
         im = Image.open(inputFileName)
         encrypt(im, secret, channel, bit)
         im.save(outputFileName)
